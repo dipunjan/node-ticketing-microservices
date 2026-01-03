@@ -1,0 +1,49 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch via npm:debug (local)",
+            "type": "pwa-node",
+            "request": "launch",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": [
+                "run",
+                "debug"
+            ],
+            "cwd": "${workspaceFolder}/auth",
+            "console": "integratedTerminal",
+            "autoAttachChildProcesses": true,
+            "restart": true,
+            "envFile": "${workspaceFolder}/auth/.env"
+        },
+        {
+            "name": "Attach to Node (local)",
+            "type": "pwa-node",
+            "request": "attach",
+            "port": 9229,
+            "address": "localhost",
+            "protocol": "inspector",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "restart": true,
+            "localRoot": "${workspaceFolder}/auth",
+            "remoteRoot": "${workspaceFolder}/auth"
+        },
+        {
+            "name": "Attach to Node (K8s via Skaffold)",
+            "type": "pwa-node",
+            "request": "attach",
+            "port": 9229,
+            "address": "localhost",
+            "protocol": "inspector",
+            "localRoot": "${workspaceFolder}/auth",
+            "remoteRoot": "/app",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "restart": true,
+            "autoAttachChildProcesses": true
+        }
+    ]
+}
