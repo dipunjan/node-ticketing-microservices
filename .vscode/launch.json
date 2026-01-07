@@ -44,6 +44,21 @@
             ],
             "restart": true,
             "autoAttachChildProcesses": true
+        },
+        {
+            "name": "Attach to Docker Compose (auth)",
+            "type": "pwa-node",
+            "request": "attach",
+            "port": 9229,
+            "address": "localhost",
+            "protocol": "inspector",
+            "localRoot": "${workspaceFolder}/auth",
+            "remoteRoot": "/app",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "restart": true,
+            "autoAttachChildProcesses": true
         }
     ]
 }

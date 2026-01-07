@@ -1,9 +1,11 @@
+import bcrypt from "bcrypt";
 import { Request, Response, NextFunction } from "express";
 import { RequestValidationError } from "../errors/request-validation-error";
 import { User } from "../models/users";
-// (httpError already imported above)
 import { validationResult } from "express-validator";
 import { httpError } from "../errors/http-error";
+import { NotFoundError } from "../errors/not-found-error";
+import jwt from "jsonwebtoken";
 
 export const signup = async (
 	req: Request,
@@ -22,8 +24,39 @@ export const signup = async (
 		throw new httpError("User already exists", 400);
 	}
 
-	const user = new User({ email, password });
+	const user = User.build({ email, password });
 	await user.save();
+	const token = jwt.sign(
+		{ id: user.id, email: user.email },
+		process.env.JWT_SECRET!
+	);
+	res.status(201).send({ user, token });
+};
 
-	res.status(201).send({ message: "User created" });
+export const signin = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		throw new RequestValidationError(errors.array());
+	}
+
+	const { email, password } = req.body;
+
+	const user = await User.findOne({ email });
+	if (!user) {
+		throw new NotFoundError("No User Found");
+	}
+
+	const isMatch = await bcrypt.compare(password, user.password);
+	if (!isMatch) {
+		throw new httpError("Incorrect Password", 400);
+	}
+	const token = jwt.sign(
+		{ id: user.id, email: user.email },
+		process.env.JWT_SECRET!
+	);
+	res.status(200).send({ user, token });
 };
