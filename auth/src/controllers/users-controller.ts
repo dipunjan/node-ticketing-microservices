@@ -1,10 +1,9 @@
 import bcrypt from "bcrypt";
 import { Request, Response, NextFunction } from "express";
-import { RequestValidationError } from "../errors/request-validation-error";
-import { User } from "../models/users";
 import { validationResult } from "express-validator";
-import { httpError } from "../errors/http-error";
-import { NotFoundError } from "../errors/not-found-error";
+import { RequestValidationError, NotFoundError } from "@dip-university/common";
+import { User } from "../models/users";
+import { httpError } from "@dip-university/common";
 import jwt from "jsonwebtoken";
 
 export const signup = async (

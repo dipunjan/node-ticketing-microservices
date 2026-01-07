@@ -1,8 +1,8 @@
 import express from "express";
 import { userRoutes } from "./routes/users-routes";
+import { NotFoundError } from "@dip-university/common;
+import { errorHandler } from "@dip-university/common";
 import { connectDB } from "./middlewares/db";
-import { NotFoundError } from "./errors/not-found-error";
-import { errorHandler } from "./middlewares/error-handler";
 
 const app = express();
 app.set("trust proxy", true);

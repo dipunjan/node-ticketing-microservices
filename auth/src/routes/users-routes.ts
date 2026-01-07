@@ -2,14 +2,12 @@ import express from "express";
 import "express-async-errors";
 import { body } from "express-validator";
 import * as userController from "../controllers/users-controller";
-import { currentUser } from "../middlewares/currentUser";
-import { httpError } from "../errors/http-error";
-import { requireAuth } from "../middlewares/requireAuth";
+import { currentUser, requireAuth } from "@dip-university/common";
 
 const router = express.Router();
 
 router.get("/currentuser", currentUser, requireAuth, (req, res) => {
-	res.status(200).send(req.user);
+	res.status(200).send(req.currentUser);
 });
 
 router.post(

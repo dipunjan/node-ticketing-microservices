@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import { NextFunction } from "express";
-import { httpError } from "../errors/http-error";
 
 interface UserAttr {
 	email: string;
