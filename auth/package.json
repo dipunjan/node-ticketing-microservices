@@ -1,16 +1,16 @@
 {
   "name": "auth",
   "version": "1.0.0",
+  "private": true,
   "main": "index.ts",
   "scripts": {
     "start": "ts-node-dev --respawn --poll src/index.ts"
   },
-  "keywords": [],
-  "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
+    "@dip-university/common": "^3.0.8",
     "bcrypt": "^6.0.0",
+    "cookie-session": "^2.1.0",
     "dotenv": "^17.2.3",
     "express": "^4.22.1",
     "express-async-errors": "^3.1.1",

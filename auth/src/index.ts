@@ -1,7 +1,6 @@
 import express from "express";
 import { userRoutes } from "./routes/users-routes";
-import { NotFoundError } from "@dip-university/common;
-import { errorHandler } from "@dip-university/common";
+import { errorHandler, NotFoundError } from "@dip-university/common";
 import { connectDB } from "./middlewares/db";
 
 const app = express();
