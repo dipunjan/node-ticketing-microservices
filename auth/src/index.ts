@@ -1,5 +1,5 @@
 import express from "express";
-import { userRoutes } from "./routes/users-routes";
+import { userRoutes } from "./routes/user-routes";
 import { errorHandler, NotFoundError } from "@dip-university/common";
 import { connectDB } from "./middlewares/db";
 

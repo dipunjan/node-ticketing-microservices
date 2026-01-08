@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { httpError } from "../errors/http-error";
+import { HttpError } from "../errors/http-error";
 
 export const errorHandler = (
 	err: Error,
@@ -7,7 +7,7 @@ export const errorHandler = (
 	res: Response,
 	next: NextFunction
 ) => {
-	if (err instanceof httpError) {
+	if (err instanceof HttpError) {
 		return res.status(err.statusCode).send({ errors: err.serializeErrors() });
 	}
 

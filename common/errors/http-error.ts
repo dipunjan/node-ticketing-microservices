@@ -1,4 +1,4 @@
-export class httpError extends Error {
+export class HttpError extends Error {
 	statusCode: number;
 	code?: string;
 
@@ -8,7 +8,7 @@ export class httpError extends Error {
 		this.statusCode = statusCode;
 		if (code) this.code = code;
 
-		Object.setPrototypeOf(this, httpError.prototype);
+		Object.setPrototypeOf(this, HttpError.prototype);
 	}
 
 	serializeErrors(): { message: string; code?: string }[] {

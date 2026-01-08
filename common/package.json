@@ -1,6 +1,6 @@
 {
   "name": "@dip-university/common",
-  "version": "3.0.8",
+  "version": "3.0.34",
   "description": "Shared auth, errors, and middleware for microservices",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
@@ -10,7 +10,7 @@
   "scripts": {
     "clean": "del-cli build",
     "build": "npm run clean && tsc",
-    "publish": "npm run build && npm version patch &&npm publish --access=public"
+    "pub": "npm run build && npm version patch && npm publish --access=public"
   },
   "license": "ISC",
   "peerDependencies": {

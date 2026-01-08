@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { httpError } from "../errors/http-error";
+import { HttpError } from "../errors/http-error";
 
 declare global {
 	namespace Express {
@@ -16,15 +16,15 @@ export const currentUser = async (
 	next: NextFunction
 ) => {
 	const token = req.headers.authorization?.replace("Bearer ", "");
-
+	console.log("Token:", token);
 	if (!token) {
 		return next();
 	}
 	try {
-		const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+		const decoded = jwt.verify(token, process.env.JWT_KEY!) as any;
 		req.currentUser = { id: decoded.id, email: decoded.email };
 		next();
 	} catch (err) {
-		throw new httpError("Invalid token", 401);
+		throw new HttpError("Invalid token", 401);
 	}
 };

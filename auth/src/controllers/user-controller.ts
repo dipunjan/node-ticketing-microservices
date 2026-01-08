@@ -2,8 +2,8 @@ import bcrypt from "bcrypt";
 import { Request, Response, NextFunction } from "express";
 import { validationResult } from "express-validator";
 import { RequestValidationError, NotFoundError } from "@dip-university/common";
-import { User } from "../models/users";
-import { httpError } from "@dip-university/common";
+import { User } from "../models/user";
+import { HttpError } from "@dip-university/common";
 import jwt from "jsonwebtoken";
 
 export const signup = async (
@@ -20,14 +20,14 @@ export const signup = async (
 
 	const existingUser = await User.findOne({ email });
 	if (existingUser) {
-		throw new httpError("User already exists", 400);
+		throw new HttpError("User already exists", 400);
 	}
 
 	const user = User.build({ email, password });
 	await user.save();
 	const token = jwt.sign(
 		{ id: user.id, email: user.email },
-		process.env.JWT_SECRET!
+		process.env.JWT_KEY!
 	);
 	res.status(201).send({ user, token });
 };
@@ -51,11 +51,19 @@ export const signin = async (
 
 	const isMatch = await bcrypt.compare(password, user.password);
 	if (!isMatch) {
-		throw new httpError("Incorrect Password", 400);
+		throw new HttpError("Incorrect Password", 400);
 	}
 	const token = jwt.sign(
 		{ id: user.id, email: user.email },
-		process.env.JWT_SECRET!
+		process.env.JWT_KEY!
 	);
 	res.status(200).send({ user, token });
+};
+export const getAllUsers = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
+	const users = await User.find({});
+	res.status(200).send(users);
 };

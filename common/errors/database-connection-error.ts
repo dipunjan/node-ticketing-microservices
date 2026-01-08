@@ -1,15 +1,12 @@
-import { httpError } from "./http-error";
+import { HttpError } from "./http-error";
 
-export class DatabaseConnectionError extends httpError {
-	statusCode = 500;
-	reason = "Error connecting to database";
-
+export class DatabaseConnectionError extends HttpError {
 	constructor() {
-		super("Error connecting to db", 500);
+		super("Error connecting to database", 500);
 		Object.setPrototypeOf(this, DatabaseConnectionError.prototype);
 	}
 
 	serializeErrors() {
-		return [{ message: this.reason }];
+		return [{ message: this.message }];
 	}
 }
