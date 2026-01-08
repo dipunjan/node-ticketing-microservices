@@ -10,8 +10,7 @@
   "scripts": {
     "clean": "del-cli build",
     "build": "npm run clean && tsc",
-    "release:patch": "npm version patch",
-    "publish:pkg": "npm run build && npm publish --access=public"
+    "publish": "npm run build && npm version patch &&npm publish --access=public"
   },
   "license": "ISC",
   "peerDependencies": {

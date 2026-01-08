@@ -1,0 +1,30 @@
+{
+  "name": "auth",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.ts",
+  "scripts": {
+    "start": "ts-node-dev --respawn --poll src/index.ts"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "@dip-university/common": "^3.0.8",
+    "bcrypt": "^6.0.0",
+    "cookie-session": "^2.1.0",
+    "dotenv": "^17.2.3",
+    "express": "^4.22.1",
+    "express-async-errors": "^3.1.1",
+    "express-validator": "^7.3.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.1.1"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/express": "^4.17.25",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^20.8.1",
+    "ts-node": "^10.9.1",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.9.3"
+  }
+}
