@@ -4,11 +4,12 @@
   "private": true,
   "main": "index.ts",
   "scripts": {
-    "start": "ts-node-dev --poll src/index.ts"
+    "start": "ts-node-dev --poll src/index.ts",
+    "start:debug": "ts-node-dev --inspect=0.0.0.0:9230 --poll src/index.ts"
   },
   "license": "ISC",
   "dependencies": {
-    "@dip-university/common": "^3.0.34",
+    "@dip-university/common": "^3.0.36",
     "bcrypt": "^6.0.0",
     "cookie-session": "^2.1.0",
     "dotenv": "^17.2.3",

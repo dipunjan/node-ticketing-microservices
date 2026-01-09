@@ -12,11 +12,8 @@ export const createTicket = async (
 	res: Response,
 	next: NextFunction
 ) => {
-	const errors = validationResult(req);
-	if (!errors.isEmpty()) {
-		throw new RequestValidationError(errors.array());
-	}
 	// Logic to create a ticket goes here
+	debugger;
 	const ticket = Ticket.build({
 		title: req.body.title,
 		price: req.body.price,

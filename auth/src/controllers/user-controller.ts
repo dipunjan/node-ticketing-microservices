@@ -11,11 +11,6 @@ export const signup = async (
 	res: Response,
 	next: NextFunction
 ) => {
-	const errors = validationResult(req);
-	if (!errors.isEmpty()) {
-		throw new RequestValidationError(errors.array());
-	}
-
 	const { email, password } = req.body;
 
 	const existingUser = await User.findOne({ email });
@@ -37,11 +32,6 @@ export const signin = async (
 	res: Response,
 	next: NextFunction
 ) => {
-	const errors = validationResult(req);
-	if (!errors.isEmpty()) {
-		throw new RequestValidationError(errors.array());
-	}
-
 	const { email, password } = req.body;
 
 	const user = await User.findOne({ email });
@@ -65,5 +55,6 @@ export const getAllUsers = async (
 	next: NextFunction
 ) => {
 	const users = await User.find({});
+	debugger;
 	res.status(200).send(users);
 };

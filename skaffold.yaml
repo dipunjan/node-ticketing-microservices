@@ -1,8 +1,10 @@
 apiVersion: skaffold/v4beta3
 kind: Config
+
 manifests:
   rawYaml:
     - ./infra/k8s/*
+
 build:
   local:
     push: false
@@ -23,3 +25,30 @@ build:
         manual:
           - src: "src/**/*.ts"
             dest: .
+
+portForward:
+  # ---------- AUTH ----------
+  # Auth Node debugger
+  - resourceType: deployment
+    resourceName: auth-depl
+    port: 9229
+    localPort: 9229
+
+  # Auth Mongo
+  - resourceType: statefulset
+    resourceName: auth-mongo
+    port: 27017
+    localPort: 27017
+
+  # ---------- TICKETS ----------
+  # Tickets Node debugger
+  - resourceType: deployment
+    resourceName: tickets-depl
+    port: 9230
+    localPort: 9230
+
+  # Tickets Mongo
+  - resourceType: statefulset
+    resourceName: tickets-mongo
+    port: 27017
+    localPort: 27018

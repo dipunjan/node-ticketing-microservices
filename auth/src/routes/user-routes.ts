@@ -2,7 +2,11 @@ import express from "express";
 import "express-async-errors";
 import { body } from "express-validator";
 import * as userController from "../controllers/user-controller";
-import { currentUser, requireAuth } from "@dip-university/common";
+import {
+	currentUser,
+	requireAuth,
+	validateRequest,
+} from "@dip-university/common";
 
 const router = express.Router();
 
@@ -18,6 +22,7 @@ router.post(
 			.isLength({ min: 4 })
 			.withMessage("Password is not minimum length"),
 	],
+	validateRequest,
 	userController.signin
 );
 
@@ -33,8 +38,9 @@ router.post(
 			.isLength({ min: 4 })
 			.withMessage("Password is not minimum length"),
 	],
+	validateRequest,
 	userController.signup
 );
-router.get("/", currentUser, requireAuth, userController.getAllUsers);
+router.get("/", userController.getAllUsers);
 
 export { router as userRoutes };

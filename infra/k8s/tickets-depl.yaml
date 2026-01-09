@@ -15,6 +15,9 @@ spec:
       containers:
         - name: tickets
           image: tickets
+          ports:
+            - containerPort: 3000
+            - containerPort: 9230
           env:
             - name: MONGO_URI
               value: "mongodb://tickets-mongo-srv:27017/tickets"

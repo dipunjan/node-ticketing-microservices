@@ -1,6 +1,6 @@
 {
   "name": "@dip-university/common",
-  "version": "3.0.34",
+  "version": "3.0.36",
   "description": "Shared auth, errors, and middleware for microservices",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
@@ -15,6 +15,7 @@
   "license": "ISC",
   "peerDependencies": {
     "express": "^4.18.0",
+    "express-validator": "^7.3.1",
     "cookie-session": "^2.0.0",
     "jsonwebtoken": "^9.0.0"
   },

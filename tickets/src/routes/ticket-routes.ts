@@ -1,7 +1,7 @@
 import express from "express";
 import "express-async-errors";
 import { body } from "express-validator";
-import { requireAuth } from "@dip-university/common";
+import { requireAuth, validateRequest } from "@dip-university/common";
 import * as ticketController from "../controllers/ticket-controller";
 
 const router = express.Router();
@@ -10,11 +10,12 @@ router.post(
 	"/create",
 	requireAuth,
 	[
-		body("title").isEmpty().withMessage("Title is required"),
+		body("title").notEmpty().withMessage("Title is required"),
 		body("price")
 			.isFloat({ min: 0 })
 			.withMessage("Price must be greater than 0"),
 	],
+	validateRequest,
 	ticketController.createTicket
 );
 
