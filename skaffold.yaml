@@ -10,45 +10,34 @@ build:
     push: false
   artifacts:
     - image: auth
-      context: auth
+      context: .
       docker:
-        dockerfile: Dockerfile
+        dockerfile: auth/Dockerfile
       sync:
         manual:
-          - src: "src/**/*.ts"
-            dest: .
+          - src: auth/src/**/*.ts
+            dest: auth/src
+          - src: common/src/**/*.ts
+            dest: common/src
+
     - image: tickets
-      context: tickets
+      context: .
       docker:
-        dockerfile: Dockerfile
+        dockerfile: tickets/Dockerfile
       sync:
         manual:
-          - src: "src/**/*.ts"
-            dest: .
+          - src: tickets/src/**/*.ts
+            dest: tickets/src
+          - src: common/src/**/*.ts
+            dest: common/src
 
 portForward:
-  # ---------- AUTH ----------
-  # Auth Node debugger
   - resourceType: deployment
     resourceName: auth-depl
     port: 9229
     localPort: 9229
 
-  # Auth Mongo
-  - resourceType: statefulset
-    resourceName: auth-mongo
-    port: 27017
-    localPort: 27017
-
-  # ---------- TICKETS ----------
-  # Tickets Node debugger
   - resourceType: deployment
     resourceName: tickets-depl
     port: 9230
     localPort: 9230
-
-  # Tickets Mongo
-  - resourceType: statefulset
-    resourceName: tickets-mongo
-    port: 27017
-    localPort: 27018

@@ -16,7 +16,6 @@ export const currentUser = async (
 	next: NextFunction
 ) => {
 	const token = req.headers.authorization?.replace("Bearer ", "");
-	console.log("Token:", token);
 	if (!token) {
 		return next();
 	}

@@ -7,9 +7,10 @@
             "name": "Attach Auth Service (K8s)",
             "address": "localhost",
             "port": 9229,
-            "localRoot": "${workspaceFolder}/auth",
+            "localRoot": "${workspaceFolder}",
             "remoteRoot": "/app",
             "restart": true,
+            "sourceMaps": true,
             "skipFiles": [
                 "<node_internals>/**"
             ]
@@ -20,9 +21,10 @@
             "name": "Attach Tickets Service (K8s)",
             "address": "localhost",
             "port": 9230,
-            "localRoot": "${workspaceFolder}/tickets",
+            "localRoot": "${workspaceFolder}",
             "remoteRoot": "/app",
             "restart": true,
+            "sourceMaps": true,
             "skipFiles": [
                 "<node_internals>/**"
             ]
