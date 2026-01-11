@@ -41,3 +41,18 @@ portForward:
     resourceName: tickets-depl
     port: 9230
     localPort: 9230
+
+  - resourceType: deployment
+    resourceName: rabbitmq-depl
+    port: 15672
+    localPort: 15672
+
+  - resourceType: deployment
+    resourceName: prometheus-depl
+    port: 9090
+    localPort: 9090
+
+  - resourceType: deployment
+    resourceName: grafana-depl
+    port: 3000
+    localPort: 3001

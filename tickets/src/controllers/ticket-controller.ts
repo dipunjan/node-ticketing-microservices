@@ -6,20 +6,27 @@ import {
 	NotAuthorizedError,
 } from "@dip-university/common";
 import { Ticket } from "../models/ticket";
+import { publishTicketCreated, publishTicketUpdated } from "../rabbitmq";
 
 export const createTicket = async (
 	req: Request,
 	res: Response,
 	next: NextFunction
 ) => {
-	// Logic to create a ticket goes here
-	debugger;
 	const ticket = Ticket.build({
 		title: req.body.title,
 		price: req.body.price,
 		userId: req.currentUser!.id,
 	});
 	await ticket.save();
+
+	// Publish ticket:created event to RabbitMQ
+	await publishTicketCreated({
+		id: ticket.id,
+		title: ticket.title,
+		price: ticket.price,
+		userId: ticket.userId,
+	});
 
 	res.status(201).send(ticket);
 };
@@ -61,5 +68,14 @@ export const updateTicket = async (
 		price: req.body.price,
 	});
 	await ticket.save();
+
+	// Publish ticket:updated event to RabbitMQ
+	await publishTicketUpdated({
+		id: ticket.id,
+		title: ticket.title,
+		price: ticket.price,
+		changes: { title: req.body.title, price: req.body.price },
+	});
+
 	res.status(200).send(ticket);
 };

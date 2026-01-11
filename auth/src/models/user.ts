@@ -12,7 +12,7 @@ interface UserModel extends mongoose.Model<UserDoc> {
 }
 // Interface for the User Document
 interface UserDoc extends mongoose.Document {
-	id: number;
+	id: string;
 	email: string;
 	password: string;
 }

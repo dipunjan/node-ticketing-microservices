@@ -5,6 +5,7 @@ import { RequestValidationError, NotFoundError } from "@dip-university/common";
 import { User } from "../models/user";
 import { HttpError } from "@dip-university/common";
 import jwt from "jsonwebtoken";
+import { publishUserCreated } from "../rabbitmq";
 
 export const signup = async (
 	req: Request,
@@ -20,6 +21,10 @@ export const signup = async (
 
 	const user = User.build({ email, password });
 	await user.save();
+
+	// Publish user:created event to RabbitMQ
+	await publishUserCreated({ id: user.id, email: user.email });
+
 	const token = jwt.sign(
 		{ id: user.id, email: user.email },
 		process.env.JWT_KEY!

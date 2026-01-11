@@ -17,7 +17,8 @@ spec:
         fsGroup: 999
       containers:
         - name: mongo
-          image: mongo
+          image: mongo:6.0.27
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 27017
           volumeMounts:
