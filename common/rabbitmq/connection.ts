@@ -185,7 +185,7 @@ class RabbitMQManager extends EventEmitter {
 	async consume(
 		queue: string,
 		handler: MessageHandler,
-		options: ConsumeOptions = {}
+		options: ConsumeOptions & { isReconnect?: boolean } = {}
 	): Promise<string> {
 		const channel = await this.connect();
 		await this.assertQueue(queue);
@@ -208,9 +208,11 @@ class RabbitMQManager extends EventEmitter {
 			{ noAck: options.noAck ?? false }
 		);
 
-		// Store consumer for reconnection
-		this.consumers.set(consumerTag, { queue, handler, options });
-		console.log(`[RabbitMQ] Consuming from queue: ${queue}`);
+		// Store consumer for reconnection (only if not already a reconnect)
+		if (!options.isReconnect) {
+			this.consumers.set(consumerTag, { queue, handler, options });
+			console.log(`[RabbitMQ] Consuming from queue: ${queue}`);
+		}
 
 		return consumerTag;
 	}
@@ -301,9 +303,25 @@ class RabbitMQManager extends EventEmitter {
 		try {
 			await this.connect();
 			// Restore consumers after reconnection
-			for (const [, consumer] of this.consumers) {
-				await this.consume(consumer.queue, consumer.handler, consumer.options);
+			// Save existing consumers before clearing
+			const consumersToRestore = Array.from(this.consumers.values());
+			this.consumers.clear();
+
+			console.log(
+				`[RabbitMQ] Restoring ${consumersToRestore.length} consumers...`
+			);
+			for (const consumer of consumersToRestore) {
+				await this.consume(consumer.queue, consumer.handler, {
+					...consumer.options,
+					isReconnect: true,
+				});
+				// Re-add to consumers map since we're reconnecting
+				this.consumers.set(
+					`restored-${consumer.queue}-${Date.now()}`,
+					consumer
+				);
 			}
+			console.log(`[RabbitMQ] Reconnected and restored all consumers`);
 			this.emit("reconnected");
 		} catch (err) {
 			console.error("[RabbitMQ] Reconnection failed:", err);
