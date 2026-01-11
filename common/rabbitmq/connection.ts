@@ -1,10 +1,12 @@
-import amqp, { Channel, ChannelModel, ConsumeMessage } from "amqplib";
+import amqp, {
+	ChannelWrapper,
+	AmqpConnectionManager,
+} from "amqp-connection-manager";
+import { ConsumeMessage, Channel } from "amqplib";
 
 // Module-level state
-let connection: ChannelModel | null = null;
-let channel: Channel | null = null;
-let isConnecting = false;
-let currentUrl: string | null = null;
+let connection: AmqpConnectionManager | null = null;
+let channelWrapper: ChannelWrapper | null = null;
 
 export interface ConsumeOptions {
 	noAck?: boolean;
@@ -13,74 +15,55 @@ export interface ConsumeOptions {
 type MessageHandler = (msg: ConsumeMessage | null) => void | Promise<void>;
 
 /**
- * Connect to RabbitMQ (with simple retry)
+ * Connect to RabbitMQ with automatic reconnection
  */
-export async function connect(url: string): Promise<Channel> {
-	// Return existing channel if connected
-	if (channel && connection) {
-		return channel;
+export async function connect(url: string): Promise<ChannelWrapper> {
+	if (channelWrapper && connection) {
+		return channelWrapper;
 	}
 
-	// Prevent multiple simultaneous connection attempts
-	if (isConnecting) {
-		return new Promise((resolve) => {
-			const interval = setInterval(() => {
-				if (channel) {
-					clearInterval(interval);
-					resolve(channel);
-				}
-			}, 100);
-		});
-	}
+	connection = amqp.connect([url]);
 
-	isConnecting = true;
-	currentUrl = url;
+	connection.on("connect", () => {
+		console.log("[RabbitMQ] Connected successfully");
+	});
 
-	let retryDelay = 1000;
-	const maxDelay = 30000;
+	connection.on("disconnect", (err) => {
+		console.warn(
+			"[RabbitMQ] Disconnected, will reconnect...",
+			err.err?.message
+		);
+	});
 
-	while (true) {
-		try {
-			console.log("[RabbitMQ] Connecting...");
-			connection = await amqp.connect(url);
-			channel = await connection.createChannel();
+	connection.on("connectFailed", (err) => {
+		console.error("[RabbitMQ] Connection attempt failed:", err.err?.message);
+	});
 
-			// Handle connection close
-			connection.on("close", () => {
-				console.log("[RabbitMQ] Connection closed");
-				connection = null;
-				channel = null;
-			});
+	channelWrapper = connection.createChannel({
+		json: true,
+		setup: (channel: Channel) => {
+			console.log("[RabbitMQ] Channel created");
+			return Promise.resolve();
+		},
+	});
 
-			connection.on("error", (err) => {
-				console.error("[RabbitMQ] Connection error:", err.message);
-			});
-
-			isConnecting = false;
-			console.log("[RabbitMQ] Connected");
-			return channel;
-		} catch (err) {
-			console.log(
-				`[RabbitMQ] Connection failed, retrying in ${retryDelay}ms...`
-			);
-			await sleep(retryDelay);
-			retryDelay = Math.min(retryDelay * 2, maxDelay);
-		}
-	}
+	// Wait for channel to be ready
+	await channelWrapper.waitForConnect();
+	return channelWrapper;
 }
 
 /**
  * Check if connected to RabbitMQ
  */
 export function isConnected(): boolean {
-	return connection !== null && channel !== null;
+	return connection?.isConnected() ?? false;
 }
 
 /**
- * Get the current channel (must call connect first)
+ * Get the current channel wrapper
  */
-export function getChannel(): Channel | null {
-	return channel;
+export function getChannel(): ChannelWrapper | null {
+	return channelWrapper;
 }
 
 /**
@@ -89,21 +72,16 @@ export function getChannel(): Channel | null {
 export async function publish(
 	queue: string,
 	message: string | Buffer | object
-): Promise<boolean> {
-	if (!channel || !currentUrl) {
+): Promise<void> {
+	if (!channelWrapper) {
 		throw new Error("[RabbitMQ] Not connected. Call connect() first.");
 	}
 
-	await channel.assertQueue(queue, { durable: true });
+	await channelWrapper.addSetup((channel: Channel) => {
+		return channel.assertQueue(queue, { durable: true });
+	});
 
-	const content =
-		typeof message === "object" && !Buffer.isBuffer(message)
-			? Buffer.from(JSON.stringify(message))
-			: Buffer.isBuffer(message)
-			? message
-			: Buffer.from(message);
-
-	return channel.sendToQueue(queue, content, { persistent: true });
+	await channelWrapper.sendToQueue(queue, message, { persistent: true });
 }
 
 /**
@@ -114,29 +92,33 @@ export async function consume(
 	handler: MessageHandler,
 	options: ConsumeOptions = {}
 ): Promise<string> {
-	if (!channel) {
+	if (!channelWrapper) {
 		throw new Error("[RabbitMQ] Not connected. Call connect() first.");
 	}
 
-	await channel.assertQueue(queue, { durable: true });
+	let consumerTag = "";
 
-	const { consumerTag } = await channel.consume(
-		queue,
-		async (msg) => {
-			try {
-				await handler(msg);
-			} catch (err) {
-				console.error(
-					`[RabbitMQ] Error processing message from ${queue}:`,
-					err
-				);
-				if (msg && !options.noAck) {
-					channel?.nack(msg, false, true);
+	await channelWrapper.addSetup(async (channel: Channel) => {
+		await channel.assertQueue(queue, { durable: true });
+		const result = await channel.consume(
+			queue,
+			async (msg) => {
+				try {
+					await handler(msg);
+				} catch (err) {
+					console.error(
+						`[RabbitMQ] Error processing message from ${queue}:`,
+						err
+					);
+					if (msg && !options.noAck) {
+						channel.nack(msg, false, true);
+					}
 				}
-			}
-		},
-		{ noAck: options.noAck ?? false }
-	);
+			},
+			{ noAck: options.noAck ?? false }
+		);
+		consumerTag = result.consumerTag;
+	});
 
 	console.log(`[RabbitMQ] Consuming from queue: ${queue}`);
 	return consumerTag;
@@ -146,36 +128,31 @@ export async function consume(
  * Acknowledge a message
  */
 export function ack(msg: ConsumeMessage): void {
-	channel?.ack(msg);
+	channelWrapper?.ack(msg);
 }
 
 /**
  * Negative acknowledge a message
  */
 export function nack(msg: ConsumeMessage, requeue = true): void {
-	channel?.nack(msg, false, requeue);
+	channelWrapper?.nack(msg, false, requeue);
 }
 
 /**
- * Close the connection
+ * Close the connection gracefully
  */
 export async function close(): Promise<void> {
 	try {
-		if (channel) {
-			await channel.close();
-			channel = null;
+		if (channelWrapper) {
+			await channelWrapper.close();
+			channelWrapper = null;
 		}
 		if (connection) {
 			await connection.close();
 			connection = null;
 		}
-		console.log("[RabbitMQ] Connection closed");
+		console.log("[RabbitMQ] Connection closed gracefully");
 	} catch (err) {
 		console.error("[RabbitMQ] Error closing connection:", err);
 	}
-}
-
-// Helper
-function sleep(ms: number): Promise<void> {
-	return new Promise((resolve) => setTimeout(resolve, ms));
 }
