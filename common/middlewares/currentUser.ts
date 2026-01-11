@@ -22,8 +22,9 @@ export const currentUser = async (
 	try {
 		const decoded = jwt.verify(token, process.env.JWT_KEY!) as any;
 		req.currentUser = { id: decoded.id, email: decoded.email };
-		next();
 	} catch (err) {
-		throw new HttpError("Invalid token", 401);
+		// Invalid token - silently ignore and proceed without currentUser
+		// The requireAuth middleware will handle unauthorized access
 	}
+	next();
 };
