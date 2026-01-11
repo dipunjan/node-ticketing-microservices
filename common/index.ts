@@ -7,9 +7,5 @@ export * from "./middlewares/currentUser";
 export * from "./middlewares/requireAuth";
 export * from "./middlewares/error-handler";
 export * from "./middlewares/validateRequest";
-export { RabbitMQ, RabbitMQManager } from "./rabbitmq/connection";
-export type {
-	RabbitMQConfig,
-	QueueOptions,
-	ConsumeOptions,
-} from "./rabbitmq/connection";
+export * as rabbitmq from "./rabbitmq/connection";
+export type { ConsumeOptions } from "./rabbitmq/connection";

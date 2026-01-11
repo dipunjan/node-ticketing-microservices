@@ -1,7 +1,6 @@
 import bcrypt from "bcrypt";
 import { Request, Response, NextFunction } from "express";
-import { validationResult } from "express-validator";
-import { RequestValidationError, NotFoundError } from "@dip-university/common";
+import { NotFoundError } from "@dip-university/common";
 import { User } from "../models/user";
 import { HttpError } from "@dip-university/common";
 import jwt from "jsonwebtoken";

@@ -1,10 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { validationResult } from "express-validator";
-import {
-	RequestValidationError,
-	NotFoundError,
-	NotAuthorizedError,
-} from "@dip-university/common";
+import { NotFoundError, NotAuthorizedError } from "@dip-university/common";
 import { Ticket } from "../models/ticket";
 import { publishTicketCreated, publishTicketUpdated } from "../rabbitmq";
 

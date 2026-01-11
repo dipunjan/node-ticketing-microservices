@@ -1,14 +1,8 @@
 import express from "express";
 import { userRoutes } from "./routes/user-routes";
-import {
-	errorHandler,
-	NotFoundError,
-	RabbitMQManager,
-} from "@dip-university/common";
+import { errorHandler, NotFoundError } from "@dip-university/common";
 import { connectDB } from "./middlewares/db";
-import { initRabbitMQ, getRabbitMQ } from "./rabbitmq";
-
-const RABBITMQ_URL = process.env.RABBITMQ_URL || "amqp://rabbitmq-srv:5672";
+import { initRabbitMQ, isConnected } from "./rabbitmq";
 
 const app = express();
 app.set("trust proxy", true);
@@ -20,11 +14,19 @@ app.get("/health/live", (req, res) => {
 });
 
 app.get("/health/ready", (req, res) => {
-	const rabbit = getRabbitMQ();
-	if (rabbit.isConnected()) {
-		res.status(200).json({ status: "ready", rabbitmq: "connected" });
+	if (isConnected()) {
+		res.status(200).json({
+			status: "ready",
+			rabbitmq: "connected",
+			message: "Service is ready to handle requests",
+		});
 	} else {
-		res.status(503).json({ status: "not ready", rabbitmq: "disconnected" });
+		res.status(503).json({
+			status: "not ready",
+			rabbitmq: "disconnected",
+			message:
+				"RabbitMQ connection unavailable - event publishing/consuming disabled",
+		});
 	}
 });
 
@@ -46,7 +48,7 @@ const start = async () => {
 		});
 
 		// Initialize RabbitMQ (handles its own retries)
-		initRabbitMQ().catch((err) => {
+		initRabbitMQ().catch((err: unknown) => {
 			console.error("[Auth] Failed to initialize RabbitMQ:", err);
 		});
 
