@@ -90,10 +90,6 @@ class RabbitMQEventBus implements IEventBus {
 	 * All subscribers with matching routing key will receive it
 	 */
 	async publish<T = unknown>(event: string, payload: T): Promise<void> {
-		if (!this.connected || !this.channel) {
-			throw new Error("[EventBus] Not connected. Call connect() first.");
-		}
-
 		const message = {
 			event,
 			data: payload,
@@ -122,19 +118,8 @@ class RabbitMQEventBus implements IEventBus {
 		event: string,
 		handler: EventHandler<T>
 	): Promise<void> {
-		if (!this.connected || !this.channel) {
-			throw new Error("[EventBus] Not connected. Call connect() first.");
-		}
-
-		const serviceName = process.env.SERVICE_NAME;
-		if (!serviceName) {
-			throw new Error(
-				"[EventBus] SERVICE_NAME environment variable is not set"
-			);
-		}
-
 		// Queue name: serviceName.eventName (e.g., "orders.ticket.created")
-		const queueName = `${serviceName}.${event}`;
+		const queueName = `${process.env.SERVICE_NAME}.${event}`;
 
 		await this.channel!.addSetup(async (channel: any) => {
 			// Assert queue for this service
@@ -163,7 +148,9 @@ class RabbitMQEventBus implements IEventBus {
 			);
 		});
 
-		console.log(`[EventBus] 👂 Subscribed: ${serviceName} → ${event}`);
+		console.log(
+			`[EventBus] 👂 Subscribed: ${process.env.SERVICE_NAME} → ${event}`
+		);
 	}
 
 	isConnected(): boolean {
