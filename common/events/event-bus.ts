@@ -3,7 +3,7 @@ import amqp, {
 	AmqpConnectionManager,
 } from "amqp-connection-manager";
 import { ConsumeMessage, Options } from "amqplib";
-import { IEventBus, EventHandler } from "./event-bus.interface";
+import { IEventBus, EventHandler } from "./event-models";
 
 /**
  * RabbitMQ implementation of EventBus

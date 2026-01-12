@@ -7,7 +7,5 @@ export * from "./middlewares/currentUser";
 export * from "./middlewares/requireAuth";
 export * from "./middlewares/error-handler";
 export * from "./middlewares/validateRequest";
-
-// Event Bus - Abstraction layer
-export { eventBus, Events } from "./events";
-export type { IEventBus, EventHandler, EventName } from "./events";
+export * from "./events/event-bus";
+export * from "./events/event-models";
