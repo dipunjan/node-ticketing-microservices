@@ -1,35 +1,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: auth-depl
+  name: orders-depl
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: auth
+      app: orders
   template:
     metadata:
       labels:
-        app: auth
+        app: orders
     spec:
       containers:
-        - name: auth
-          image: auth
+        - name: orders
+          image: orders
           ports:
             - containerPort: 3000
-            - containerPort: 9229
+            - containerPort: 9231
           env:
             - name: SERVICE_NAME
-              value: "auth"
-            - name: MONGO_URI
-              value: "mongodb://auth-mongo-srv:27017/auth"
+              value: "orders"
             - name: RABBITMQ_URL
               value: "amqp://rabbitmq-srv:5672"
-            - name: JWT_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: jwt-secret
-                  key: JWT_KEY
           livenessProbe:
             httpGet:
               path: /health/live
@@ -50,13 +43,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: auth-srv
+  name: orders-srv
 spec:
   selector:
-    app: auth
+    app: orders
   type: ClusterIP
   ports:
-    - name: auth
+    - name: orders
       protocol: TCP
       port: 3000
       targetPort: 3000

@@ -1,13 +1,10 @@
 import express from "express";
-import { userRoutes } from "./routes/user-routes";
-import { errorHandler, NotFoundError, eventBus } from "@dip-university/common";
-import { connectDB } from "./middlewares/db";
+import { setupSubscriptions } from "./events";
+import { eventBus } from "@dip-university/common";
 
 const app = express();
-app.set("trust proxy", true);
 app.use(express.json());
 
-// Health check endpoints for Kubernetes
 app.get("/health/live", (req, res) => {
 	res.status(200).json({ status: "alive" });
 });
@@ -20,29 +17,22 @@ app.get("/health/ready", (req, res) => {
 	}
 });
 
-app.use("/api/users", userRoutes);
-app.all("*", (req, res) => {
-	throw new NotFoundError();
-});
-
-app.use(errorHandler);
-
 const start = async () => {
 	try {
-		// Connect to MongoDB
-		await connectDB();
-
 		// Connect to RabbitMQ (with auto-reconnect)
 		await eventBus.connect();
 
+		// Set up event subscriptions
+		await setupSubscriptions();
+
 		// Start HTTP server
 		const server = app.listen(3000, () => {
-			console.log("[Auth] ✅ Listening on 3000");
+			console.log("[Orders] ✅ Listening on 3000");
 		});
 
 		// Graceful shutdown
 		const shutdown = async () => {
-			console.log("[Auth] Shutting down...");
+			console.log("[Orders] Shutting down...");
 			await eventBus.close();
 			server.close();
 			process.exit(0);
@@ -50,8 +40,9 @@ const start = async () => {
 		process.on("SIGTERM", shutdown);
 		process.on("SIGINT", shutdown);
 	} catch (err) {
-		console.error("[Auth] Startup failed", err);
+		console.error("[Orders] Startup failed", err);
 		process.exit(1);
 	}
 };
+
 start();

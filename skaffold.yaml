@@ -31,6 +31,17 @@ build:
           - src: common/src/**/*.ts
             dest: common/src
 
+    - image: orders
+      context: .
+      docker:
+        dockerfile: orders/Dockerfile
+      sync:
+        manual:
+          - src: orders/src/**/*.ts
+            dest: orders/src
+          - src: common/src/**/*.ts
+            dest: common/src
+
 portForward:
   - resourceType: deployment
     resourceName: auth-depl
@@ -41,6 +52,11 @@ portForward:
     resourceName: tickets-depl
     port: 9230
     localPort: 9230
+
+  - resourceType: deployment
+    resourceName: orders-depl
+    port: 9231
+    localPort: 9231
 
   - resourceType: deployment
     resourceName: rabbitmq-depl

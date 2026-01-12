@@ -19,6 +19,8 @@ spec:
             - containerPort: 3000
             - containerPort: 9230
           env:
+            - name: SERVICE_NAME
+              value: "tickets"
             - name: MONGO_URI
               value: "mongodb://tickets-mongo-srv:27017/tickets"
             - name: RABBITMQ_URL

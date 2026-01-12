@@ -3,6 +3,7 @@
   "workspaces": [
     "common",
     "auth",
-    "tickets"
+    "tickets",
+    "orders"
   ]
 }

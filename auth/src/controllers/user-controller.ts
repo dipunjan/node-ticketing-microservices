@@ -1,10 +1,6 @@
-import bcrypt from "bcrypt";
 import { Request, Response, NextFunction } from "express";
-import { NotFoundError } from "@dip-university/common";
-import { User } from "../models/user";
-import { HttpError } from "@dip-university/common";
-import jwt from "jsonwebtoken";
-import { publishUserCreated } from "../rabbitmq";
+import * as userService from "../services/user-service";
+import { publishUserCreated } from "../events";
 
 export const signup = async (
 	req: Request,
@@ -12,23 +8,11 @@ export const signup = async (
 	next: NextFunction
 ) => {
 	const { email, password } = req.body;
+	const result = await userService.signup(email, password);
 
-	const existingUser = await User.findOne({ email });
-	if (existingUser) {
-		throw new HttpError("User already exists", 400);
-	}
+	await publishUserCreated({ id: result.user.id, email: result.user.email });
 
-	const user = User.build({ email, password });
-	await user.save();
-
-	// Publish user:created event to RabbitMQ
-	await publishUserCreated({ id: user.id, email: user.email });
-
-	const token = jwt.sign(
-		{ id: user.id, email: user.email },
-		process.env.JWT_KEY!
-	);
-	res.status(201).send({ user, token });
+	res.status(201).send(result);
 };
 
 export const signin = async (
@@ -37,28 +21,16 @@ export const signin = async (
 	next: NextFunction
 ) => {
 	const { email, password } = req.body;
+	const result = await userService.signin(email, password);
 
-	const user = await User.findOne({ email });
-	if (!user) {
-		throw new NotFoundError("No User Found");
-	}
-
-	const isMatch = await bcrypt.compare(password, user.password);
-	if (!isMatch) {
-		throw new HttpError("Incorrect Password", 400);
-	}
-	const token = jwt.sign(
-		{ id: user.id, email: user.email },
-		process.env.JWT_KEY!
-	);
-	res.status(200).send({ user, token });
+	res.status(200).send(result);
 };
+
 export const getAllUsers = async (
 	req: Request,
 	res: Response,
 	next: NextFunction
 ) => {
-	const users = await User.find({});
-	debugger;
+	const users = await userService.getAllUsers();
 	res.status(200).send(users);
 };

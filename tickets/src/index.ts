@@ -4,33 +4,23 @@ import {
 	currentUser,
 	errorHandler,
 	NotFoundError,
+	eventBus,
 } from "@dip-university/common";
 import { connectDB } from "./middlewares/db";
-import { initRabbitMQ, isConnected } from "./rabbitmq";
 
 const app = express();
 app.set("trust proxy", true);
 app.use(express.json());
 
-// Health check endpoints for Kubernetes
 app.get("/health/live", (req, res) => {
 	res.status(200).json({ status: "alive" });
 });
 
 app.get("/health/ready", (req, res) => {
-	if (isConnected()) {
-		res.status(200).json({
-			status: "ready",
-			rabbitmq: "connected",
-			message: "Service is ready to handle requests",
-		});
+	if (eventBus.isConnected()) {
+		res.status(200).json({ status: "ready", rabbitmq: "connected" });
 	} else {
-		res.status(503).json({
-			status: "not ready",
-			rabbitmq: "disconnected",
-			message:
-				"RabbitMQ connection unavailable - event publishing/consuming disabled",
-		});
+		res.status(503).json({ status: "not ready", rabbitmq: "disconnected" });
 	}
 });
 
@@ -44,22 +34,21 @@ app.use(errorHandler);
 
 const start = async () => {
 	try {
-		// Connect to MongoDB (required)
+		// Connect to MongoDB
 		await connectDB();
 
-		// Start HTTP server immediately
-		const server = app.listen(3000, () => {
-			console.log("[Tickets] Listening on 3000");
-		});
+		// Connect to RabbitMQ (with auto-reconnect)
+		await eventBus.connect();
 
-		// Initialize RabbitMQ (handles its own retries)
-		initRabbitMQ().catch((err: unknown) => {
-			console.error("[Tickets] Failed to initialize RabbitMQ:", err);
+		// Start HTTP server
+		const server = app.listen(3000, () => {
+			console.log("[Tickets] ✅ Listening on 3000");
 		});
 
 		// Graceful shutdown
 		const shutdown = async () => {
 			console.log("[Tickets] Shutting down...");
+			await eventBus.close();
 			server.close();
 			process.exit(0);
 		};
